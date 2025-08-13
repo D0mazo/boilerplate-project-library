@@ -4,90 +4,105 @@ const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  comments: { type: [String], default: [] },
-  commentcount: { type: Number, default: 0 }
+  comments: { type: [String], default: [] }
 });
 
 const Book = mongoose.model('Book', bookSchema);
 
 module.exports = function (app) {
+  
+  // /api/books
   app.route('/api/books')
     .get(async function (req, res) {
       try {
-        const books = await Book.find().select('_id title commentcount');
-        res.json(books);
+        const books = await Book.find();
+        // Always recalc commentcount
+        const result = books.map(b => ({
+          _id: b._id,
+          title: b.title,
+          commentcount: b.comments.length
+        }));
+        res.json(result);
       } catch (err) {
-        res.status(500).json({ error: 'server error' });
+        res.send('server error');
       }
     })
     
     .post(async function (req, res) {
-      let title = req.body.title;
+      const title = req.body.title;
       if (!title) {
-        return res.status(200).send('missing required field title');
+        return res.send('missing required field title');
       }
       try {
         const newBook = new Book({ title });
         const savedBook = await newBook.save();
         res.json({ _id: savedBook._id, title: savedBook.title });
       } catch (err) {
-        res.status(500).json({ error: 'server error' });
+        res.send('server error');
       }
     })
     
     .delete(async function (req, res) {
       try {
         await Book.deleteMany({});
-        res.status(200).send('complete delete successful');
+        res.send('complete delete successful');
       } catch (err) {
-        res.status(500).json({ error: 'server error' });
+        res.send('server error');
       }
     });
 
+  // /api/books/:id
   app.route('/api/books/:id')
     .get(async function (req, res) {
-      let bookid = req.params.id;
+      const bookid = req.params.id;
       try {
-        const book = await Book.findById(bookid).select('_id title comments');
+        const book = await Book.findById(bookid);
         if (!book) {
-          return res.status(200).send('no book exists');
+          return res.send('no book exists');
         }
-        res.json(book);
+        res.json({
+          _id: book._id,
+          title: book.title,
+          comments: book.comments
+        });
       } catch (err) {
-        res.status(200).send('no book exists');
+        res.send('no book exists');
       }
     })
     
     .post(async function (req, res) {
-      let bookid = req.params.id;
-      let comment = req.body.comment;
+      const bookid = req.params.id;
+      const comment = req.body.comment;
       if (!comment) {
-        return res.status(200).send('missing required field comment');
+        return res.send('missing required field comment');
       }
       try {
         const book = await Book.findById(bookid);
         if (!book) {
-          return res.status(200).send('no book exists');
+          return res.send('no book exists');
         }
         book.comments.push(comment);
-        book.commentcount = book.comments.length;
-        const updatedBook = await book.save();
-        res.json({ _id: updatedBook._id, title: updatedBook.title, comments: updatedBook.comments });
+        await book.save();
+        res.json({
+          _id: book._id,
+          title: book.title,
+          comments: book.comments
+        });
       } catch (err) {
-        res.status(200).send('no book exists');
+        res.send('no book exists');
       }
     })
     
     .delete(async function (req, res) {
-      let bookid = req.params.id;
+      const bookid = req.params.id;
       try {
         const result = await Book.findByIdAndDelete(bookid);
         if (!result) {
-          return res.status(200).send('no book exists');
+          return res.send('no book exists');
         }
-        res.status(200).send('delete successful');
+        res.send('delete successful');
       } catch (err) {
-        res.status(200).send('no book exists');
+        res.send('no book exists');
       }
     });
 };

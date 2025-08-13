@@ -20,33 +20,36 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
 
+// Static files
 app.use('/public', express.static(process.cwd() + '/public'));
 
-app.use(cors({ origin: '*' })); // USED FOR FCC TESTING PURPOSES ONLY!
+// For FCC testing
+app.use(cors({ origin: '*' }));
 
-app.use(bodyParser.json());
+// Body parsers — form first, then JSON
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// Index page (static HTML)
+// Index route
 app.route('/')
   .get(function (req, res) {
     res.sendFile(process.cwd() + '/views/index.html');
   });
 
-// For FCC testing purposes
+// FCC testing routes
 fccTestingRoutes(app);
 
-// Routing for API 
-apiRoutes(app);  
+// API routes
+apiRoutes(app);
 
-// 404 Not Found Middleware
-app.use(function(req, res, next) {
+// 404 Middleware
+app.use(function(req, res) {
   res.status(404)
     .type('text')
     .send('Not Found');
 });
 
-// Start our server and tests!
+// Start server
 const listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
   if (process.env.NODE_ENV === 'test') {
