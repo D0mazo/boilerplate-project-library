@@ -7,14 +7,15 @@
 		"start": "node server.js"
 	},
 	"dependencies": {
-		"body-parser": "^1.15.2",
-		"chai": "^4.2.0",
-		"chai-http": "^4.3.0",
-		"cors": "^2.8.1",
-		"dotenv": "^8.2.0",
+		"body-parser": "^1.20.3",
+		"chai": "^4.5.0",
+		"chai-http": "^4.4.0",
+		"cors": "^2.8.5",
+		"dotenv": "^8.6.0",
 		"dotnet": "^1.1.4",
-		"express": "^4.14.0",
-		"mocha": "^3.2.0",
+		"express": "^4.21.2",
+		"mocha": "^3.5.3",
+		"mongoose": "^8.17.1",
 		"zombie": "^5.0.5"
 	},
 	"repository": {
